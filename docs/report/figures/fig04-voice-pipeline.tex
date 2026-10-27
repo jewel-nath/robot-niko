@@ -1,0 +1,23 @@
+% One spoken exchange, from src/main.py, src/talk.py and src/move.py
+% (read 2026-10-28). config/conversation.yaml holds 51 questions in 152 phrasings.
+\begin{tikzpicture}[node distance=6mm and 8mm]
+  \node[uibox, minimum width=26mm] (mic) {\textbf{Microphone}};
+  \node[uibox, right=of mic, minimum width=32mm] (wake) {\textbf{Wake word}\\\scriptsize ``Hey Niko'', Porcupine,\\\scriptsize on the Pi};
+  \node[uibox, right=of wake, minimum width=34mm] (asr) {\textbf{Online assistant}\\\scriptsize listens and\\\scriptsize transcribes the question};
+  \node[hostbox, below=10mm of asr, minimum width=34mm] (match) {\textbf{Match}\\\scriptsize against 51 questions\\\scriptsize (152 phrasings)};
+  \node[hostbox, below left=10mm and 4mm of match, minimum width=36mm] (own) {\textbf{Niko's own answer}\\\scriptsize spoken by an online voice\\\scriptsize in headless Chromium};
+  \node[uibox, below right=10mm and 4mm of match, minimum width=36mm] (other) {\textbf{Any other question}\\\scriptsize answered by the\\\scriptsize online assistant};
+  \node[uibox, below=24mm of match, minimum width=30mm] (spk) {\textbf{Speaker}};
+  \node[mcubox, below=8mm of spk, minimum width=34mm] (jaw) {\textbf{Jaw}\\\scriptsize opens and closes, 0.2\,s each way,\\\scriptsize while GPIO 18 is high};
+  \node[hwbox, below=6mm of wake, minimum width=30mm] (led) {\textbf{Status lights}\\\scriptsize listening / speaking};
+
+  \draw[flow] (mic) -- (wake);
+  \draw[flow] (wake) -- node[lbl, above=2pt] {\scriptsize wakes} (asr);
+  \draw[flow] (asr) -- node[lbl, right=2pt] {\scriptsize text} (match);
+  \draw[flow] (match) -- node[lbl] {\scriptsize found} (own);
+  \draw[flow] (match) -- node[lbl] {\scriptsize not found} (other);
+  \draw[flow] (own) |- (spk);
+  \draw[flow] (other) |- (spk);
+  \draw[dataflow] (spk) -- node[lbl, right=2pt] {\scriptsize while speaking} (jaw);
+  \draw[dataflow] (asr.south west) -- (led.east);
+\end{tikzpicture}

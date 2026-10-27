@@ -1,0 +1,53 @@
+% Fonts, colours, TikZ styles and macros that every diagram and plot uses.
+% Loaded by style.tex (the report) and by make-diagrams.py (one file per diagram).
+
+\usepackage{amsmath}
+\usepackage{newtxmath}
+% Tectonic runs XeTeX without system fonts, so load the TeX Gyre fonts by file name:
+% Termes (a Times) for the text, Heros (a Helvetica) for headings and labels.
+\usepackage{fontspec}
+\setmainfont{texgyretermes}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+  ItalicFont=*-italic, BoldItalicFont=*-bolditalic]
+\setsansfont{texgyreheros}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold,
+  ItalicFont=*-italic, BoldItalicFont=*-bolditalic, Scale=0.92]
+
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, positioning, fit, calc, shapes.geometric, backgrounds,
+  decorations.pathreplacing}
+
+% One palette for every figure: a layer has one colour everywhere.
+\definecolor{mcu}{HTML}{E8F1FB}       % motion: servo boards, servos, gestures
+\definecolor{mcuedge}{HTML}{2F6DB5}
+\definecolor{host}{HTML}{EAF6EC}      % the Raspberry Pi and its programs
+\definecolor{hostedge}{HTML}{2E7D32}
+\definecolor{ui}{HTML}{FFF4E0}        % voice: wake word, assistant, speech
+\definecolor{uiedge}{HTML}{C77700}
+\definecolor{vis}{HTML}{F3ECFA}       % vision: camera, faces
+\definecolor{visedge}{HTML}{7B3FA8}
+\definecolor{hw}{HTML}{F1F1F1}        % body and other hardware
+\definecolor{hwedge}{HTML}{555555}
+\definecolor{warn}{HTML}{FDECEC}
+\definecolor{warnedge}{HTML}{B3261E}
+
+\tikzset{
+  >={Stealth[length=2mm]},
+  box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize,
+              minimum height=7mm, inner sep=3pt},
+  mcubox/.style={box, fill=mcu, draw=mcuedge},
+  hostbox/.style={box, fill=host, draw=hostedge},
+  uibox/.style={box, fill=ui, draw=uiedge},
+  hwbox/.style={box, fill=hw, draw=hwedge},
+  visbox/.style={box, fill=vis, draw=visedge},
+  warnbox/.style={box, fill=warn, draw=warnedge},
+  group/.style={draw, dashed, rounded corners=3pt, inner sep=6pt},
+  grouplabel/.style={font=\scriptsize\itshape, anchor=north west},
+  flow/.style={->, thick},
+  dataflow/.style={->, thick, densely dashed},
+  lbl/.style={font=\scriptsize, midway, fill=white, inner sep=1pt},
+}
+
+% A file, function or code name, typeset as written (underscores included).
+\newcommand{\topic}[1]{\texttt{\detokenize{#1}}}

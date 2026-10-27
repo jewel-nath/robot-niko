@@ -1,0 +1,391 @@
+\documentclass[11pt]{article}
+\input{style}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+% Title block
+\thispagestyle{empty}
+\begin{tcolorbox}[colback=accent, colframe=accent, arc=3pt, left=14pt, right=14pt, top=14pt, bottom=12pt]
+  \color{white}\sffamily\raggedright
+  {\small Technical report \quad$\cdot$\quad Version 1.0 \quad$\cdot$\quad October 2026}\par\vspace{8pt}
+  {\LARGE\bfseries Robot Niko: A Life-Size 3D-Printed Humanoid Assistant on a Raspberry~Pi}\par\vspace{6pt}
+  {\large System Design and Build}
+\end{tcolorbox}
+
+\vspace{4pt}
+{\sffamily
+\textbf{Jewel Nath}\quad{\color{muted}Independent researcher, Dhaka, Bangladesh}\\
+{\small\color{muted}ORCID \href{https://orcid.org/0009-0002-6609-6378}{0009-0002-6609-6378}\quad$\cdot$\quad Code: \url{https://github.com/jewel-nath/robot-niko}\quad$\cdot$\quad Licence: \href{https://creativecommons.org/licenses/by/4.0/}{CC BY 4.0}}\par}
+
+\vspace{6pt}
+\begin{summarybox}{Abstract}
+Niko is a life-size humanoid assistant built in 2022 by Quanta Robotics, a student robotics team at Comilla University, at the FabLab of the Deputy Commissioner's Office in Cumilla, Bangladesh. Its body follows InMoov, the open-source 3D-printed humanoid: a head, torso, two arms and two five-fingered hands, on a stand over a wheeled base.
+
+Where InMoov is usually run by Arduino boards and the MyRobotLab framework, Niko runs from a single Raspberry~Pi~4 with its own Python software. Two PCA9685 boards drive its 27 servos, addressed as one set of channels and moved through a library of gestures written as timed sequences of joint angles. A wake word, ``Hey Niko'', runs on the robot; an online assistant transcribes speech; and Niko answers questions about itself and its host from its own bank (51 questions in 152 phrasings in the published code), in its own voice, its jaw moving as it speaks. A camera lets it turn its head toward a face, and recognise people it has been taught, greeting each one by name with a handshake.
+
+Niko was launched in public on 6 December 2022, and was reported by six news outlets and interviewed on national television. This report describes its mechanical build, electronics, software architecture, motion, voice and vision, documents the behaviours shown on video, and sets out the lessons and the next steps.
+
+\smallskip
+{\sffamily\small\textbf{Keywords:} humanoid robots, social robots, InMoov, 3D printing, Raspberry Pi, servo control, wake word, face recognition, human--robot interaction.}
+\end{summarybox}
+
+% ---------------------------------------------------------------------------
+\section{Introduction}
+
+Robots that meet people face to face, greet them and answer their questions are an established line of research in social robotics~\cite{fong2003survey,breazeal2003sociable}. A robot receptionist that greets visitors and talks with them~\cite{gockley2005valerie} and mass-produced humanoids such as NAO and Pepper~\cite{gouaillier2009nao,pandey2018pepper} have shown what such robots can do, but commercial platforms remain out of reach for most student teams.
+
+Open-source, 3D-printed designs have changed that. InMoov~\cite{inmoov} and Poppy~\cite{lapeyre2014poppy} publish every part of a humanoid body, printable on a home printer. A body, however, is only half of a robot: it still needs the electronics and software that make it see, speak and move.
+
+Niko was built to show that a student team could take an open design to a working, life-size assistant in under a year, with one low-cost computer and its own software. Its job was to greet visitors to the FabLab, answer their questions about the robot and its host, and recognise the people it knows (Fig.~\ref{fig:hero}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[height=62mm]{robot-niko-2022-11-29-full-robot.jpg}\hspace{4mm}
+  \includegraphics[height=62mm]{robot-niko-2022-11-29-on-wheeled-base.jpg}
+  \caption{Niko, finished, on 29 November 2022: the InMoov head, torso, arms and hands on a metal stand (left), and the stand on its wheeled base in the FabLab (right).}
+  \label{fig:hero}
+\end{figure}
+
+This report describes Niko as built, and contributes:
+
+\begin{enumerate}
+  \item a complete InMoov upper body built and run from a single Raspberry~Pi, in Python, in place of the usual Arduino boards and MyRobotLab (Sections~\ref{sec:build}--\ref{sec:software});
+  \item a motion layer that drives 27 servos on two boards as one set of channels, with a library of gestures, from a handshake to counting on its fingers (Section~\ref{sec:motion});
+  \item a voice pipeline that combines an on-device wake word, an online assistant and Niko's own bank of answers, with a jaw that moves as it speaks (Section~\ref{sec:voice});
+  \item vision that turns the head toward a face and greets known people by name with a handshake (Section~\ref{sec:vision});
+  \item the behaviours shown on video, and the open source code, under the MIT licence; files derived from other projects keep their own licences~\cite{nikorepo} (Section~\ref{sec:demo}).
+\end{enumerate}
+
+\begin{summarybox}{Results at a glance}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.3\linewidth}X>{\raggedleft\arraybackslash}p{0.2\linewidth}@{}}
+  \textbf{\sffamily What Niko does} & \textbf{\sffamily How} & \textbf{\sffamily Evidence} \\
+  \midrule
+  Follows a face with its head & OpenCV face detection steers the head servo & \onvideo \\
+  Greets people by name & face recognition, then a spoken greeting and a handshake & \onvideo \\
+  Holds spoken conversations & wake word, online assistant, its own question bank & \onvideo \\
+  Introduces itself & a launch speech in seven parts & \onvideo \\
+  Moves on its wheeled base & a two-motor base under the stand & \onvideo \\
+  Moves 27 joints & head, eyes, jaw, shoulders, arms, wrists and fingers & \incode \\
+  Makes hand gestures & handshake (used in greetings); thumbs up, pointing, counting and more in the library & \incode \\
+  Starts by itself & a systemd service starts and restarts it & \incode \\
+\end{tabularx}
+\par\smallskip
+{\footnotesize\sffamily Videos recorded on 6 and 7 December 2022 at the FabLab; two are public: \href{https://youtu.be/6iEj3AY1AlA}{the head following a face} and \href{https://youtu.be/Iotg0E8AKoU}{Niko introducing itself}.}
+\end{summarybox}
+
+% ---------------------------------------------------------------------------
+\section{Related Work}
+
+\paragraph{Social robots} Fong et al.\ survey robots built to interact with people~\cite{fong2003survey}, and Breazeal sets out what makes a robot sociable~\cite{breazeal2003sociable}. Gockley et al.\ placed a robot receptionist with a scripted character in a university building, for long-term interaction with the people who passed it~\cite{gockley2005valerie}. Niko shared that setting: it lived in one place, greets the people it knows and answers questions about its host.
+
+\paragraph{Humanoid platforms} NAO~\cite{gouaillier2009nao} and Pepper~\cite{pandey2018pepper} are the best-known commercial humanoids for interaction, and iCub~\cite{metta2008icub} is an open platform for research in embodied cognition. InMoov~\cite{inmoov}, begun by Gaël Langevin in 2012, and the Poppy project~\cite{lapeyre2014poppy} made life-size and smaller humanoids printable at home. InMoov is usually run by Arduino boards under MyRobotLab~\cite{myrobotlab}; Niko keeps InMoov's body and replaces its control with a Raspberry~Pi and its own code.
+
+\paragraph{Perception} Niko's face detector is the boosted cascade of Viola and Jones~\cite{viola2001rapid}, as implemented in OpenCV~\cite{bradski2000opencv}. Its face recognition uses the \topic{face_recognition} library~\cite{facerecognition}, built on dlib~\cite{king2009dlib}: faces are aligned with landmarks found by regression trees~\cite{kazemi2014one}, encoded by a residual network~\cite{he2016resnet} into an embedding in the spirit of FaceNet~\cite{schroff2015facenet}, and classified by nearest neighbours~\cite{cover1967nearest} with scikit-learn~\cite{pedregosa2011sklearn}.
+
+\paragraph{Voice} The voice program began from GassistPi~\cite{gassistpi}, an open voice assistant for single-board computers, and uses Picovoice's Porcupine~\cite{porcupine} for an on-device wake word.
+
+% ---------------------------------------------------------------------------
+\section{System Overview}
+\label{sec:overview}
+
+Fig.~\ref{fig:overview} shows the whole robot. A Raspberry~Pi~4 runs every program. It drives the servos over I$^2$C through two PCA9685 boards, hears and speaks through a USB sound card, sees through a USB camera on the chest, and signals its state with two lights. Online services, reached over the internet, transcribe speech and voice Niko's answers.
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.98}{figures/fig01-system-overview}
+  \caption{System overview. One Raspberry~Pi (green) runs the programs; two PCA9685 boards drive the 27 servos (blue); voice (orange) and vision (purple) devices connect over USB.}
+  \label{fig:overview}
+\end{figure}
+
+The design rests on two choices. First, one computer does everything: there is no microcontroller between the Pi and the servos, only the PCA9685 boards, which generate the pulses on their own once set. Second, the question bank is kept out of the code, in a YAML file: teaching Niko a new answer is an edit to a file, not to the program. The servo map, the channel and starting angle of every joint, is written down in a second YAML file, and the moves use the same numbers.
+
+% ---------------------------------------------------------------------------
+\section{Mechanical Build}
+\label{sec:build}
+
+Niko is InMoov's head, torso, arms and hands~\cite{inmoov}. InMoov's parts are designed to print on a printer with a 12\,$\times$\,12\,$\times$\,12\,cm bed; its fingers are pulled by tendons from servos in the forearm. Niko's eyes move in two axes, its jaw opens and closes, its neck is moved by three servos, and each arm has a shoulder, an omoplate (shoulder blade), an arm rotation, a bicep, a wrist and five fingers. The upper body stands on a metal stand, and the stand on a wheeled base with two motors.
+
+In August 2022 the team assembled a 3D model of Niko from InMoov's parts in Blender, with ``NIKO'' on its chest, and posed its joints. The first printed parts in the photos date from mid-August, and the robot was assembled in November (Figs.~\ref{fig:build} and~\ref{fig:timeline}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[height=44mm]{robot-niko-2022-11-02-head-and-frame.jpg}\hfill
+  \includegraphics[height=44mm]{robot-niko-2022-11-02-arm-parts.jpg}\hfill
+  \includegraphics[height=44mm]{robot-niko-2022-11-08-head-and-chest.jpg}\hfill
+  \includegraphics[height=44mm]{robot-niko-2022-11-23-torso-assembled.jpg}
+  \caption{The build in November 2022, in order: the head on its frame, its eyes in (2 November); one arm and hand, printed and wired (2 November); the head on the chest, ``NIKO'' printed on it (8 November); the head on the assembled torso (23 November).}
+  \label{fig:build}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.98}{figures/fig08-timeline}
+  \caption{Niko in 2022, from the first work to the public launch, from the dated photos, videos and code history.}
+  \label{fig:timeline}
+\end{figure}
+
+\paragraph{Author's contribution} The author co-founded Quanta Robotics, led Niko's programming and wrote most of its code, 3D-printed and assembled its body, tuned its 27 servos, and planned its arm motions as servo sequences.
+
+% ---------------------------------------------------------------------------
+\section{Electronics}
+\label{sec:electronics}
+
+Table~\ref{tab:hw} lists the main parts. The 27 servos are split over two PCA9685 boards~\cite{pca9685} on the Pi's I$^2$C bus 1, at addresses 0x40 and 0x41. Each board has 16 channels of 12-bit PWM; the software sets both to 60\,Hz. The first board drives the head and the right arm, the second the left arm and the eyes' tilt (Fig.~\ref{fig:servomap}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Main parts, from the code, the setup scripts and the build photos.}
+  \label{tab:hw}
+  \renewcommand{\arraystretch}{1.25}
+  \small
+  \begin{tabularx}{0.92\textwidth}{@{}>{\sffamily\bfseries}p{0.22\textwidth}X@{}}
+    \toprule
+    \thead{Part} & \thead{Role} \\
+    \midrule
+    Raspberry Pi 4 & runs every program; Python, started by systemd \\
+    2 $\times$ PCA9685 & 16-channel, 12-bit PWM boards at 0x40 and 0x41, set to 60\,Hz; 27 channels used \\
+    27 servos & head 1, neck 3, eyes 2, jaw 1; per arm: shoulder, omoplate, rotation, bicep, wrist and 5 fingers \\
+    USB camera & on the chest; face following and recognition \\
+    USB sound card & microphone and speaker, shared by every program through ALSA's \topic{dsnoop} and \topic{dmix} \\
+    Status lights & listening (GPIO 4) and speaking (GPIO 6) \\
+    Speaking signal & GPIO 18, an input the code reads as ``Niko is speaking''; while it is high, the jaw moves \\
+    7-inch screen & at the base, showing the camera view \\
+    Wheeled base & two motors under the stand \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.95}{figures/fig02-servo-map}
+  \caption{The servo map: every joint's channel and starting angle, as set in \topic{config/servo-configuration.yaml}. Board~1 (blue) drives the head and the right arm; board~2 (teal) the left arm and the eyes' up-and-down axis.}
+  \label{fig:servomap}
+\end{figure}
+
+% ---------------------------------------------------------------------------
+\section{Software Architecture}
+\label{sec:software}
+
+Niko's software is Python on the Raspberry~Pi (Fig.~\ref{fig:software}). A systemd service starts the voice program, \topic{main.py}, at boot and restarts it if it stops; secrets, such as the wake-word engine's access key, are read from a file outside the repository. The voice program runs the assistant's event loop, with the wake-word detector on its own thread, the jaw on its own process, and a headless Chromium for Niko's voice.
+
+The vision programs and the launch speech are started on demand, and draw on a common set of modules: \topic{move.py} for the servos, \topic{movement/} for the gestures, \topic{indicator.py} for the lights and the \topic{talk} modules for speech. Installer scripts set up the system packages, a Python virtual environment, the sound card and the service.
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.92}{figures/fig07-software-map}
+  \caption{The software: the voice program, started at boot (left); the programs started on demand (right); and the modules they draw on (bottom).}
+  \label{fig:software}
+\end{figure}
+
+The servo map is loaded once, at start; if the file is found empty, \topic{move.py} restores it from a backup copy before going on.
+
+% ---------------------------------------------------------------------------
+\section{Motion}
+\label{sec:motion}
+
+\subsection{From an angle to a pulse}
+
+Every move goes through one function, \topic{servoMove(n, angle)} (Fig.~\ref{fig:chain}). It takes a channel from 0 to 26 and an angle from 0 to 180$^\circ$, maps the angle linearly to 100--600 counts of the PCA9685's 4096-count cycle, and writes it to board~1 for channels below 16, or to channel $n-16$ of board~2 otherwise. The rest of the code never needs to know which board a joint is on.
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.95}{figures/fig03-servo-chain}\par\bigskip
+  \diagramw{0.62}{figures/plot01-angle-to-pulse}
+  \caption{Top: one call moves any joint. Bottom: the pulse width this gives at 60\,Hz, from 0.41\,ms at 0$^\circ$ to 2.44\,ms at 180$^\circ$, worked out from the code's mapping.}
+  \label{fig:chain}
+\end{figure}
+
+\subsection{Gestures as timed sequences}
+
+Each gesture is a short Python function that steps one or more joints through angles with pauses between them. Most arm moves step one degree every 0.1\,s, about 10$^\circ$/s as commanded; a few, such as the arm poses for counting, go straight to their angles. The fingers close and open in a single sweep. Moves of both arms together, such as raising both shoulders, step the two sides in one loop.
+
+The handshake (Fig.~\ref{fig:handshake}) shows the method. Niko reaches out with its right arm, turns its wrist, closes its fingers halfway for two seconds, opens them, and draws back, in about 18.5\,s as programmed. The library also holds a full and a half grip, thumbs up, pointing, a two-finger sign, a thumb-and-index sign, counting by raising chosen fingers, head turns and eye movements (Appendix, Fig.~\ref{fig:gestures}).
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.95}{figures/plot03-handshake}
+  \caption{The handshake as programmed: commanded angles of the right arm's omoplate, bicep, wrist and fingers over time, starting from the servos' starting angles.}
+  \label{fig:handshake}
+\end{figure}
+
+% ---------------------------------------------------------------------------
+\section{Voice}
+\label{sec:voice}
+
+\subsection{One exchange}
+
+Niko listens all the time for its wake word, ``Hey Niko'', with a custom Porcupine model~\cite{porcupine} that runs on the Pi; the online assistant's microphone stays muted until then. On the wake word, it plays a chime, lights its listening light, and hands the microphone to the online assistant, which transcribes the question (Figs.~\ref{fig:voice} and~\ref{fig:states}).
+
+The transcript is then compared with Niko's own question bank. If any of its phrasings appears in what was said, Niko stops the assistant and gives its own answer; if not, the online assistant answers. After each turn the microphone is muted again, and Niko goes back to waiting for its name.
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.92}{figures/fig04-voice-pipeline}
+  \caption{One spoken exchange. The wake word runs on the Pi; the question is matched against Niko's own question bank, and anything else goes to the online assistant.}
+  \label{fig:voice}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.7}{figures/fig05-conversation-states}
+  \caption{The conversation loop, driven by the assistant's events.}
+  \label{fig:states}
+\end{figure}
+
+\subsection{Niko's own answers}
+
+The question bank in the published code, \topic{config/conversation.yaml}, holds 51 questions (trimmed in 2026 from the 66 of December 2022), each in up to 15 phrasings, 152 in all, so that ``What is your name'', ``who are you'' and ``your name'' all reach the same answer. The questions cover who Niko is, who made it and how, where it was built, and its host, the FabLab and the Deputy Commissioner's Office. Matching ignores letter case; in the published code the first question that matches wins, so each turn gets one answer.
+
+\subsection{Niko's voice and its jaw}
+
+Niko's answers are spoken by an online text-to-speech voice, driven in a headless Chromium through Selenium: the page is opened once, at start, so each answer only fills in the text and presses play. The greetings and the launch speech use gTTS~\cite{gtts}, lowered in pitch with SoX. The team tried several other ways to listen and to speak before settling on these (Appendix, Fig.~\ref{fig:experiments}).
+
+The jaw moves on its own process. While the speaking signal on GPIO~18 is high, it moves between 110$^\circ$ (open) and 70$^\circ$ (closed), holding each for 0.2\,s, so Niko's mouth moves as it talks.
+
+% ---------------------------------------------------------------------------
+\section{Vision}
+\label{sec:vision}
+
+\subsection{Following a face}
+
+\topic{follow_face.py} reads the chest camera, finds faces with OpenCV's frontal-face cascade~\cite{viola2001rapid,bradski2000opencv}, and turns the head toward each one. The head angle is a linear function of where the face is in the picture: $\theta = 90^\circ + (x - 250)/12$, where $x$ is the left edge of the face's box in pixels (Fig.~\ref{fig:follow}). A face near the middle of the picture keeps the head straight; a face at the edge turns it by up to about 20$^\circ$ one way and 30$^\circ$ the other, after which Niko pauses for 0.1\,s before looking again. The rule is simple: the camera is fixed on the chest, so the picture does not move as the head turns, and one fixed mapping is enough.
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.62}{figures/plot02-follow-face}
+  \caption{The head-turn rule: the head servo's angle against the position of the face, assuming a 640-pixel-wide picture (the code does not set the size).}
+  \label{fig:follow}
+\end{figure}
+
+\subsection{Recognising and greeting people}
+
+Each person is enrolled once (Fig.~\ref{fig:faces}). \topic{capture_faces.py} watches the camera, and whenever it sees exactly one face, finds it with dlib's detector~\cite{king2009dlib}, aligns it by its 68 landmarks~\cite{kazemi2014one} to a 400-pixel image, and saves every fifth frame: eight photos for training and two for testing. Training turns each photo into the 128-number face encoding of the \topic{face_recognition} library~\cite{facerecognition} and fits a $k$-nearest-neighbour classifier~\cite{cover1967nearest,pedregosa2011sklearn}, weighted by distance; photos without exactly one face are left out.
+
+\begin{figure}[htbp]
+  \centering
+  \diagramw{0.98}{figures/fig06-face-recognition}
+  \caption{Face recognition: enrolment and training (top), and live recognition and greeting (bottom).}
+  \label{fig:faces}
+\end{figure}
+
+At run time, \topic{recognise_faces.py} halves each camera frame and recognises the faces in every thirtieth, to save processing time. A face whose nearest known face is within a distance of 0.5 is given that person's name; any other is ``unknown''. Once a name has been on screen for ten frames, Niko greets that person: ``Hello'', their name, a few friendly words, and a handshake. It greets each person once per run, and has a greeting of its own for its lead programmer.
+
+% ---------------------------------------------------------------------------
+\section{Demonstrations}
+\label{sec:demo}
+
+Niko's abilities were recorded on video at the FabLab in the days around its launch (Table~\ref{tab:demo}).
+
+\begin{table}[htbp]
+  \centering
+  \caption{Behaviours recorded on video, and the code behind each.}
+  \label{tab:demo}
+  \renewcommand{\arraystretch}{1.3}
+  \small
+  \begin{tabularx}{\textwidth}{@{}>{\sffamily}p{0.12\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{0.37\textwidth}@{}}
+    \toprule
+    \thead{Date} & \thead{What the video shows} & \thead{Code} \\
+    \midrule
+    6 Dec 2022 & The head follows a person walking left and right in front of Niko (53\,s; \href{https://youtu.be/6iEj3AY1AlA}{on YouTube}) & \topic{src/vision/follow_face.py} \\
+    6 Dec 2022 & Two people come up one at a time; Niko greets each one and shakes their hand (1\,min 44\,s) & \topic{src/vision/recognise_faces.py}, \topic{src/face_greeting.py} \\
+    7 Dec 2022 & Two people ask Niko questions, and it answers them (3\,min) & \topic{src/main.py}, \topic{config/conversation.yaml} \\
+    7 Dec 2022 & Niko introduces itself (41\,s; \href{https://youtu.be/Iotg0E8AKoU}{on YouTube}) & \topic{src/launch_speech.py} \\
+    7 Dec 2022 & Niko drives around the lab on its wheeled base & the base's two motors \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Niko was launched in public at the Deputy Commissioner's Office in Cumilla on 6 December 2022. Its launch was reported by Dhaka Times~24, Channel~24 Campus, Shomoyer Alo, Kaler Kantho, The Daily Post and Amader Cumilla, and the author was interviewed beside Niko by Bangladesh Television (BTV) on 14 December 2022.
+
+% ---------------------------------------------------------------------------
+\section{Lessons Learned}
+
+\paragraph{Open hardware shortens the road} Building on InMoov let a student team go from a 3D model to a finished life-size humanoid in about four months, and spend its effort on the software that makes the robot useful.
+
+\paragraph{One small computer is enough} A single Raspberry~Pi ran the voice, the vision and 27 servos. The PCA9685 boards hold each servo's pulse on their own, so the Pi only has to send new angles.
+
+\paragraph{Keep the robot's answers out of its code} With every answer in a YAML file, adding an answer was an edit to a file, not to the program.
+
+\paragraph{A local answer bank keeps the robot in character} An online assistant answers general questions well, but knows nothing about the robot or its host. Matching Niko's own questions first let it answer questions about itself and the FabLab consistently, in its own voice.
+
+\paragraph{Slow, stepped motion is enough} Moving the arm joints one degree every 0.1\,s gave slow gestures without a motion planner, which suits a robot that shakes people's hands.
+
+% ---------------------------------------------------------------------------
+\section{Limitations and Future Work}
+\label{sec:future}
+
+Niko was built as a working assistant for its launch rather than as an experiment, so its behaviours were recorded on video but not measured. Its gestures run as timed sequences without position feedback, its conversation relies on online services, and its vision programs run separately from its voice program.
+
+The next steps follow from these:
+\begin{itemize}
+  \item a conversational assistant built on a large language model, in place of the online assistant, so that Niko can hold open conversations while keeping its own knowledge of itself and its host;
+\end{itemize}
+
+Other directions the team listed in 2022 remain open: speech in Bangla, one program on ROS that joins vision, voice and motion, and mapping with the wheeled base.
+
+% ---------------------------------------------------------------------------
+\Needspace{8\baselineskip}
+\section{Conclusion}
+
+Niko shows that an open, 3D-printed humanoid body and a single Raspberry~Pi can become a life-size assistant that hears its name, answers questions in its own voice with a moving jaw, follows a face, recognises the people it knows and shakes their hands. It was built by a student team in 2022, launched in public, and its code is open for others to build on.
+
+% ---------------------------------------------------------------------------
+\section*{Acknowledgements}
+
+Niko was built by Quanta Robotics: Shanjit Mondol, Anik Chakraborty, Tousif Bin Parves, Mahin Khan and the author. The team thanks the FabLab of the Deputy Commissioner's Office, Cumilla, where Niko was built and launched.
+
+Niko's body is InMoov, by Gaël Langevin (CC BY-NC 3.0). Its voice program and installers started from Shivasiddharth's GassistPi (MIT, with two conditions); its face recognition from the $k$-NN camera example of Adam Geitgey's \topic{face_recognition} (MIT); and its service installer from Google's AIY projects (Apache 2.0). Each derived file keeps its original notice.
+
+This report was written with the help of AI assistants, under the author's direction; its statements were checked against the code, its history and the dated photos and videos.
+
+{\small
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+}
+
+% ---------------------------------------------------------------------------
+\clearpage
+\appendix
+\section{Additional Material}
+
+\begin{figure}[!ht]
+  \centering
+  \diagramw{0.62}{figures/fig09-hand-gestures}
+  \caption{The hand poses in the gesture library, as programmed for the right hand (\topic{src/movement/right_hand.py}). The left hand uses the same finger patterns, but its grips hold the thumb at 70$^\circ$ and its wrist angles differ. A finger at 0$^\circ$ is open and at 180$^\circ$ closed.}
+  \label{fig:gestures}
+\end{figure}
+
+\begin{figure}[!ht]
+  \centering
+  \diagramw{0.68}{figures/fig10-voice-experiments}
+  \caption{Ways to listen and to speak tried in 2022 (\topic{experiments/}), and what the finished robot uses.}
+  \label{fig:experiments}
+\end{figure}
+
+\begin{table}[!ht]
+  \centering
+  \caption{The repository.}
+  \label{tab:repo}
+  \renewcommand{\arraystretch}{1.25}
+  \small
+  \begin{tabularx}{0.92\textwidth}{@{}>{\ttfamily}p{0.2\textwidth}X@{}}
+    \toprule
+    \thead{Folder} & \thead{Holds} \\
+    \midrule
+    src/ & the voice program, the launch speech, and the modules they use \\
+    src/movement/ & the gestures of the head, eyes, arms, hands and wheels \\
+    src/vision/ & face following, face recognition and face enrolment \\
+    config/ & the servo map and the question bank (YAML) \\
+    assets/ & sounds, the wake-word model and the face models \\
+    scripts/ & the installers and the sound card setup \\
+    systemd/ & the service that starts Niko at boot \\
+    experiments/ & the first listening, speaking, servo and motor tests of 2022 \\
+    docs/ & photos, videos, this report and its diagrams \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\end{document}

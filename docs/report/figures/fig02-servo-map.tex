@@ -1,0 +1,75 @@
+% The 27 servos: channel, joint and starting angle, from
+% config/servo-configuration.yaml (read 2026-10-28). Channels 0-15 are on the
+% first PCA9685 (0x40), 16-26 on the second (0x41).
+\definecolor{bb}{HTML}{E2F4F3}
+\definecolor{bbedge}{HTML}{1F7A7A}
+\begin{tikzpicture}[x=1cm, y=1cm,
+    body/.style={draw=hwedge!70, fill=hw, line width=0.6pt, rounded corners=3pt},
+    joint/.style={circle, fill=mcuedge, inner sep=1.3pt},
+    grp/.style={box, align=left, font=\scriptsize, inner sep=4pt},
+    g1/.style={grp, fill=mcu, draw=mcuedge},
+    g2/.style={grp, fill=bb, draw=bbedge},
+    point/.style={->, thick, gray!70}]
+  % A simple front view of the robot (its right arm on the viewer's left)
+  \draw[body] (0,6.2) circle (0.85);
+  \draw[body] (-0.3,5.05) rectangle (0.3,5.4);
+  \draw[body] (-1.5,5.05) -- (1.5,5.05) -- (1.1,1.4) -- (-1.1,1.4) -- cycle;
+  \draw[body] (-1.75,4.95) -- (-1.35,4.95) -- (-1.8,2.6) -- (-2.2,2.6) -- cycle;
+  \draw[body] (-2.2,2.6) -- (-1.8,2.6) -- (-2.0,0.9) -- (-2.4,0.9) -- cycle;
+  \draw[body] (-2.2,0.55) ellipse (0.32 and 0.42);
+  \draw[body] (1.75,4.95) -- (1.35,4.95) -- (1.8,2.6) -- (2.2,2.6) -- cycle;
+  \draw[body] (2.2,2.6) -- (1.8,2.6) -- (2.0,0.9) -- (2.4,0.9) -- cycle;
+  \draw[body] (2.2,0.55) ellipse (0.32 and 0.42);
+  \node[font=\scriptsize\sffamily\bfseries, gray] at (0,3.2) {NIKO};
+
+  % Joint dots
+  \foreach \p in {(0,5.25), (-1.55,4.8), (-2.0,2.6), (-2.2,0.95), (1.55,4.8), (2.0,2.6), (2.2,0.95)}
+    \node[joint] at \p {};
+
+  % Head group (mostly board 1, eye tilt on board 2)
+  \node[g1, anchor=south] (head) at (0,7.45) {%
+    \textbf{Head} \\[1pt]
+    \begin{tabular}{@{}r@{\ \ }l@{\ \ }r@{}}
+      11 & head rotation & 90$^\circ$ \\
+      12 & neck & 30$^\circ$ \\
+      13 & neck, right & 100$^\circ$ \\
+      14 & neck, left & 85$^\circ$ \\
+      10 & eyes, side to side & 90$^\circ$ \\
+      \color{bbedge}26 & \color{bbedge}eyes, up and down & \color{bbedge}120$^\circ$ \\
+      15 & jaw & 70$^\circ$ \\
+    \end{tabular}};
+
+  % Right arm, board 1
+  \node[g1, anchor=east] (ra) at (-3.4,3.0) {%
+    \textbf{Right arm and hand} \\[1pt]
+    \begin{tabular}{@{}r@{\ \ }l@{\ \ }r@{}}
+      0 & shoulder & 90$^\circ$ \\
+      1 & omoplate & 90$^\circ$ \\
+      2 & arm rotation & 90$^\circ$ \\
+      3 & bicep & 90$^\circ$ \\
+      4 & wrist & 90$^\circ$ \\
+      5--9 & five fingers & 0$^\circ$ \\
+    \end{tabular}};
+
+  % Left arm, board 2
+  \node[g2, anchor=west] (la) at (3.4,3.0) {%
+    \textbf{Left arm and hand} \\[1pt]
+    \begin{tabular}{@{}r@{\ \ }l@{\ \ }r@{}}
+      16 & shoulder & 90$^\circ$ \\
+      17 & omoplate & 100$^\circ$ \\
+      18 & arm rotation & 45$^\circ$ \\
+      19 & bicep & 90$^\circ$ \\
+      20 & wrist & 90$^\circ$ \\
+      21--25 & five fingers & 0$^\circ$ \\
+    \end{tabular}};
+
+  \draw[point] (head.south) -- (0,7.1);
+  \draw[point] (ra.east) -- (-2.05,3.0);
+  \draw[point] (la.west) -- (2.05,3.0);
+
+  % Legend
+  \node[font=\scriptsize, anchor=north] at (0,0.0) {%
+    \tikz\node[g1, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ board 1 (0x40), channels 0--15\qquad
+    \tikz\node[g2, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ board 2 (0x41), channels 16--26};
+  \node[font=\scriptsize, anchor=north, gray] at (0,-0.45) {channel \quad joint \quad starting angle};
+\end{tikzpicture}

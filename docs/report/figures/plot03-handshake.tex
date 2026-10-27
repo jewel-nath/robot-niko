@@ -1,0 +1,28 @@
+% The handshake as programmed in handshake() in src/movement/right_hand.py
+% (read 2026-10-28): commanded angles against time, from the code's steps and
+% sleeps, starting from the servo starting angles. Each ramp moves 1 degree per
+% 0.1 s; grip(100) and open() have no pauses, so they are drawn as instant.
+\begin{tikzpicture}
+  \begin{axis}[
+      width=0.92\textwidth, height=64mm,
+      xmin=0, xmax=19, ymin=-5, ymax=185,
+      xtick={0,2,4,6,8,10,12,14,16,18}, ytick={0,30,60,90,120,150,180},
+      xlabel={time (s)}, ylabel={commanded angle (degrees)},
+      tick label style={font=\scriptsize}, label style={font=\scriptsize},
+      grid=major, grid style={gray!20},
+      legend style={font=\scriptsize, at={(0.5,1.03)}, anchor=south, legend columns=4, draw=none},
+      every axis plot/.append style={line width=1.1pt}]
+    \addplot[mcuedge] coordinates {(0,90) (0,120) (0.5,120) (4.4,159) (15.5,159) (15.5,150) (18.4,121) (19,121)};
+    \addlegendentry{omoplate (1)}
+    \addplot[hostedge] coordinates {(0,90) (5.5,90) (5.5,60) (8.4,31) (11.5,31) (11.5,30) (14.4,59) (19,59)};
+    \addlegendentry{bicep (3)}
+    \addplot[uiedge] coordinates {(0,90) (8.5,90) (8.5,20) (15.5,20) (15.5,90) (19,90)};
+    \addlegendentry{wrist (4)}
+    \addplot[visedge] coordinates {(0,0) (9.5,0) (9.5,99) (11.5,99) (11.5,1) (19,1)};
+    \addlegendentry{fingers (5--9)}
+    \foreach \t in {9.5, 11.5}{\edef\temp{\noexpand\draw[gray!60, dashed, line width=0.5pt] (axis cs:\t,-5) -- (axis cs:\t,185);}\temp}
+    \node[font=\scriptsize\bfseries, gray!70!black] at (axis cs:4.75,175) {reach out};
+    \node[font=\scriptsize\bfseries, gray!70!black] at (axis cs:10.5,175) {hold};
+    \node[font=\scriptsize\bfseries, gray!70!black] at (axis cs:15.25,175) {release and return};
+  \end{axis}
+\end{tikzpicture}

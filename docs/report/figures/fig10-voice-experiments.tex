@@ -1,0 +1,20 @@
+% The listening and speaking options tried in 2022, from experiments/ and its
+% README (read 2026-10-28), and what the finished robot uses.
+\begin{tikzpicture}[node distance=3mm and 8mm,
+    opt/.style={box, font=\scriptsize, minimum width=46mm, align=left, text width=44mm},
+    pick/.style={opt, line width=1.2pt}]
+  \node[font=\footnotesize\sffamily\bfseries] (lh) {Listening, tried};
+  \node[uibox, opt, below=of lh] (l1) {a web speech page in Chrome, through Selenium};
+  \node[uibox, opt, below=of l1] (l2) {the SpeechRecognition library};
+  \node[uibox, opt, below=of l2] (l3) {Vosk, fully offline};
+  \node[hostbox, pick, below=6mm of l3] (lu) {\textbf{Used:} a Porcupine wake word, then the online assistant};
+
+  \node[font=\footnotesize\sffamily\bfseries, right=34mm of lh] (sh) {Speaking, tried};
+  \node[uibox, opt, below=of sh] (s1) {four online voices, through Selenium};
+  \node[uibox, opt, below=of s1] (s2) {pyttsx3, offline};
+  \node[uibox, opt, below=of s2] (s3) {Google Translate's voice, from a shell script};
+  \node[hostbox, pick, below=6mm of s3] (su) {\textbf{Used:} an online voice for answers; gTTS, pitched lower, for greetings and the speech};
+
+  \draw[flow] (l3) -- (lu);
+  \draw[flow] (s3) -- (su);
+\end{tikzpicture}

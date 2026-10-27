@@ -1,0 +1,17 @@
+% The conversation loop as src/main.py drives it from the assistant's events
+% (read 2026-10-28).
+\begin{tikzpicture}[node distance=9mm and 16mm,
+    state/.style={box, circle, minimum size=20mm, align=center, font=\footnotesize},
+    tr/.style={->, thick, bend left=18},
+    tl/.style={font=\scriptsize, align=center, fill=white, inner sep=1.5pt}]
+  \node[state, fill=hw, draw=hwedge] (start) {\textbf{Start}\\\scriptsize welcome\\\scriptsize sound};
+  \node[state, fill=host, draw=hostedge, right=of start] (idle) {\textbf{Waiting}\\\scriptsize mic muted,\\\scriptsize wake word on};
+  \node[state, fill=ui, draw=uiedge, right=of idle] (listen) {\textbf{Listening}\\\scriptsize chime,\\\scriptsize light 1 on};
+  \node[state, fill=mcu, draw=mcuedge, below=16mm of listen] (answer) {\textbf{Answering}\\\scriptsize answer spoken,\\\scriptsize jaw moves};
+
+  \draw[->, thick] (start) -- node[tl, above=2pt] {ready} (idle);
+  \draw[tr] (idle) to node[tl, above=2pt] {``Hey Niko''} (listen);
+  \draw[tr] (listen) to node[tl, right=2pt] {question\\heard} (answer);
+  \draw[->, thick] (answer) -| node[tl, pos=0.3, below=3pt] {turn finished:\\mute mic, lights off} (idle);
+  \draw[tr] (listen) to node[tl, below=2pt] {silence\\(time-out)} (idle);
+\end{tikzpicture}

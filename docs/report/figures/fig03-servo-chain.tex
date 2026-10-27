@@ -1,0 +1,13 @@
+% From a joint angle to a servo pulse, as src/move.py does it (read 2026-10-28):
+% servoMove(n, v) maps 0-180 degrees to 100-600 counts and writes them to the
+% PCA9685 channel, which runs at 60 Hz.
+\begin{tikzpicture}[node distance=7mm]
+  \node[hostbox, minimum width=27mm] (a) {\textbf{Joint angle}\\\scriptsize $\theta$ = 0--180$^\circ$};
+  \node[hostbox, right=of a, minimum width=30mm] (m) {\textbf{\texttt{servoMove(n,\,}$\theta$\texttt{)}}\\\scriptsize $c = 100 + \tfrac{500}{180}\,\theta$};
+  \node[mcubox, right=of m, minimum width=30mm] (b) {\textbf{PCA9685}\\\scriptsize channel $n$ mod 16,\\\scriptsize 12-bit, 60\,Hz};
+  \node[mcubox, right=of b, minimum width=26mm] (s) {\textbf{Servo}\\\scriptsize pulse $c \times 4.07\,\mu$s};
+  \draw[flow] (a) -- (m);
+  \draw[flow] (m) -- node[lbl, above=2pt] {\scriptsize I$^2$C} (b);
+  \draw[flow] (b) -- (s);
+  \node[font=\scriptsize, gray, below=2mm of b, align=center] {$n<16$: board 0x40;\ \ $n\ge16$: board 0x41};
+\end{tikzpicture}

@@ -1,0 +1,32 @@
+% The hand poses programmed in src/movement/right_hand.py (read 2026-10-28).
+% left_hand.py uses the same finger patterns, with the thumb at 70 degrees in
+% its grips and other wrist angles. A finger at 0 degrees is open, 180 closed.
+\begin{tikzpicture}[x=13mm, y=7mm,
+    op/.style={circle, draw=mcuedge, line width=0.8pt, fill=white, inner sep=2.6pt},
+    cl/.style={circle, draw=mcuedge, fill=mcuedge, inner sep=2.6pt},
+    hf/.style={circle, draw=mcuedge, line width=0.8pt, inner sep=2.6pt, path picture={\fill[mcuedge] (path picture bounding box.south west) rectangle (path picture bounding box.north);}},
+    hd/.style={font=\scriptsize\sffamily\bfseries},
+    rw/.style={font=\scriptsize, anchor=east}]
+  \foreach \c/\n in {1/thumb, 2/index, 3/middle, 4/ring, 5/little}
+    \node[hd] at (\c,0.9) {\n};
+  \node[hd] at (6.2,0.9) {wrist};
+  % name / thumb index middle ring little (o open, c closed, h half) / wrist
+  \foreach \r/\name/\a/\b/\c/\d/\e/\w in {
+      0/Open hand/op/op/op/op/op/--,
+      1/Grip/cl/cl/cl/cl/cl/--,
+      2/Half grip/hf/hf/hf/hf/hf/--,
+      3/Thumbs up/op/cl/cl/cl/cl/170$^\circ$,
+      4/Pointing/cl/op/cl/cl/cl/90$^\circ$,
+      5/Two fingers/cl/op/op/cl/cl/90$^\circ$,
+      6/Thumb and index/op/op/cl/cl/cl/0$^\circ$}{
+    \node[rw] at (0.45,-\r) {\name};
+    \node[\a] at (1,-\r) {}; \node[\b] at (2,-\r) {}; \node[\c] at (3,-\r) {};
+    \node[\d] at (4,-\r) {}; \node[\e] at (5,-\r) {};
+    \node[font=\scriptsize] at (6.2,-\r) {\w};
+  }
+  \node[rw] at (0.45,-7) {Counting};
+  \node[font=\scriptsize, anchor=west] at (0.75,-7) {any chosen fingers open, the rest closed, arm raised};
+  \node[font=\scriptsize, anchor=north west, gray] at (-1.6,-7.7) {%
+    \tikz\node[op]{};\ open\quad \tikz\node[cl]{};\ closed\quad \tikz\node[hf]{};\ half closed\quad
+    -- wrist left where it was};
+\end{tikzpicture}

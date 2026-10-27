@@ -17,6 +17,13 @@ faces. It runs Python on a Raspberry Pi.
 (15 s, November 2022) and [Niko's model in Blender](docs/media/robot-niko-2022-08-07-virtual-model.mp4)
 (17 s, August 2022).
 
+## Technical report
+
+**[Robot Niko: A Life-Size 3D-Printed Humanoid Assistant on a Raspberry Pi — System Design and Build](docs/report/robot-niko-report.pdf)**
+(October 2026, 15 pages): the build, the electronics, the software, the motion,
+the voice and the vision, with 13 diagrams. Its source and the diagrams are in
+[docs/report/](docs/report/README.md) and [docs/diagrams/](docs/diagrams/README.md).
+
 ## What it does
 
 - **Talks.** It wakes to "Hey Niko", a Porcupine wake word, and holds
@@ -89,7 +96,22 @@ November 2022, in date order.
 | Lights | Two status lights, for listening and speaking ([`src/indicator.py`](src/indicator.py)) |
 | System | Python on a Raspberry Pi, started at boot by a systemd service ([`systemd/robot.service`](systemd/robot.service)) |
 
+<a href="docs/diagrams/robot-niko-system-overview.pdf"><img src="docs/diagrams/robot-niko-system-overview.png" alt="Niko's system overview: the Raspberry Pi, two servo boards, camera, sound card and lights"></a>
+
+The whole robot: one Raspberry Pi runs every program; two PCA9685 boards drive
+the 27 servos; the camera and the sound card connect over USB.
+
+| | |
+|---|---|
+| <a href="docs/diagrams/robot-niko-voice-pipeline.pdf"><img src="docs/diagrams/robot-niko-voice-pipeline.png" width="420" alt="One spoken exchange"></a><br>**Voice:** the wake word runs on the Pi; Niko answers its own 51 questions and passes the rest to the online assistant | <a href="docs/diagrams/robot-niko-face-recognition.pdf"><img src="docs/diagrams/robot-niko-face-recognition.png" width="420" alt="Face recognition"></a><br>**Faces:** each person is enrolled once; Niko then greets them by name with a handshake |
+| <a href="docs/diagrams/robot-niko-handshake.pdf"><img src="docs/diagrams/robot-niko-handshake.png" width="420" alt="The handshake's joint angles over time"></a><br>**Motion:** each gesture is a timed sequence of joint angles, like this handshake | <a href="docs/diagrams/robot-niko-software-map.pdf"><img src="docs/diagrams/robot-niko-software-map.png" width="420" alt="The programs and modules"></a><br>**Software:** the voice program starts at boot; the vision programs and the speech run on demand |
+
+All 13 diagrams are in [docs/diagrams/](docs/diagrams/README.md), and the
+[technical report](#technical-report) explains each one.
+
 ### Servo map
+
+<a href="docs/diagrams/robot-niko-servo-map.pdf"><img src="docs/diagrams/robot-niko-servo-map.png" width="560" alt="The servo map on a front view of Niko"></a>
 
 Each servo's channel and starting angle, as set in
 [`config/servo-configuration.yaml`](config/servo-configuration.yaml), the
@@ -137,7 +159,7 @@ channels 0–10. Angles are in degrees, from 0 to 180.
 | [`data/faces/`](data/faces) | The face photos the recogniser was trained on |
 | [`scripts/`](scripts) | The installers, the list of system packages and the USB sound card setup |
 | [`systemd/`](systemd) | The service that starts Niko at boot |
-| [`docs/`](docs) | The photos and videos on this page |
+| [`docs/`](docs) | The photos and videos on this page, the [technical report](docs/report/README.md) and its [diagrams](docs/diagrams/README.md) |
 | [`experiments/`](experiments) | The first tests from 2022: listening, speaking, servos and motors, and an unused Arduino link |
 
 ## My part

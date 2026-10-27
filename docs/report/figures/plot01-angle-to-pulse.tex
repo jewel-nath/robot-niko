@@ -1,0 +1,18 @@
+% Pulse width against joint angle, worked out from src/move.py (2026-10-28):
+% counts c = 100 + 500*theta/180, one count = 1/(60 Hz * 4096) = 4.07 us
+% (the nominal 60 Hz; the code truncates c to an integer).
+\begin{tikzpicture}
+  \begin{axis}[
+      width=0.62\textwidth, height=52mm,
+      xmin=0, xmax=180, ymin=0, ymax=2.8,
+      xtick={0,45,90,135,180}, ytick={0,0.5,1,1.5,2,2.5},
+      xlabel={joint angle $\theta$ (degrees)}, ylabel={pulse width (ms)},
+      tick label style={font=\scriptsize}, label style={font=\scriptsize},
+      grid=major, grid style={gray!20}]
+    \addplot[thick, mcuedge, domain=0:180, samples=2] {(100 + 500*x/180)/(60*4096)*1000};
+    \addplot[only marks, mark=*, mark size=1.8pt, mcuedge] coordinates {(0,0.407) (90,1.424) (180,2.441)};
+    \node[font=\scriptsize, anchor=south west] at (axis cs:3,0.45) {0.41 ms};
+    \node[font=\scriptsize, anchor=south east] at (axis cs:87,1.46) {1.42 ms};
+    \node[font=\scriptsize, anchor=north east] at (axis cs:176,2.42) {2.44 ms};
+  \end{axis}
+\end{tikzpicture}

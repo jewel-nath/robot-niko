@@ -1,0 +1,18 @@
+% The head-turn rule in src/vision/follow_face.py (read 2026-10-28):
+% servo 11 = 90 + (x - 250)/12, where x is the left edge of the detected face's
+% box in pixels. Drawn for a 640-pixel-wide frame; the code does not set the size.
+\begin{tikzpicture}
+  \begin{axis}[
+      width=0.62\textwidth, height=52mm,
+      xmin=0, xmax=640, ymin=60, ymax=130,
+      xtick={0,160,250,320,480,640}, ytick={60,70,80,90,100,110,120,130},
+      xlabel={left edge of the face box, $x$ (pixels)}, ylabel={head servo angle (degrees)},
+      tick label style={font=\scriptsize}, label style={font=\scriptsize},
+      grid=major, grid style={gray!20}]
+    \addplot[thick, visedge, domain=0:640, samples=2] {90 + (x-250)/12};
+    \addplot[only marks, mark=*, mark size=1.8pt, visedge] coordinates {(0,69.2) (250,90) (640,122.5)};
+    \node[font=\scriptsize, anchor=south west] at (axis cs:4,70) {69$^\circ$};
+    \node[font=\scriptsize, anchor=south east] at (axis cs:246,91) {90$^\circ$};
+    \node[font=\scriptsize, anchor=north east] at (axis cs:632,122) {122$^\circ$};
+  \end{axis}
+\end{tikzpicture}

@@ -1,0 +1,63 @@
+% Niko's hardware and data paths, from src/move.py, src/indicator.py,
+% config/servo-configuration.yaml and scripts/audio/ (read 2026-10-28).
+\begin{tikzpicture}[node distance=6mm and 10mm]
+  % The computer in the middle
+  \node[hostbox, minimum width=44mm, minimum height=36mm, font=\small] (pi)
+    {\textbf{Raspberry Pi 4}\\[2pt]\footnotesize Python programs,\\\footnotesize started by systemd};
+
+  % Online services above
+  \node[uibox, above=12mm of pi, minimum width=60mm] (cloud)
+    {\textbf{Online services}\\\scriptsize voice assistant $\cdot$ text-to-speech};
+
+  % Inputs on the left
+  \node[visbox, left=16mm of pi, yshift=11mm, minimum width=30mm] (cam)
+    {\textbf{USB camera}\\\scriptsize on the chest};
+  \node[uibox, below=6mm of cam, minimum width=30mm] (snd)
+    {\textbf{USB sound card}\\\scriptsize microphone and speaker};
+  \node[hwbox, below=6mm of snd, minimum width=30mm] (screen)
+    {\textbf{7-inch screen}\\\scriptsize at the base};
+
+  % Servo boards on the right
+  \node[mcubox, right=16mm of pi, yshift=9mm, minimum width=32mm] (b1)
+    {\textbf{PCA9685 \#1}\\\scriptsize I$^2$C 0x40, 16 servos};
+  \node[mcubox, below=9mm of b1, minimum width=32mm] (b2)
+    {\textbf{PCA9685 \#2}\\\scriptsize I$^2$C 0x41, 11 servos};
+
+  % Servo groups
+  \node[mcubox, right=10mm of b1, yshift=5mm, minimum width=30mm, font=\scriptsize] (g1)
+    {head, neck, eyes, jaw (6)};
+  \node[mcubox, below=2mm of g1, minimum width=30mm, font=\scriptsize] (g2)
+    {right arm and hand (10)};
+  \node[mcubox, right=10mm of b2, yshift=4mm, minimum width=30mm, font=\scriptsize] (g3)
+    {left arm and hand (10)};
+  \node[mcubox, below=2mm of g3, minimum width=30mm, font=\scriptsize] (g4)
+    {eyes, up and down (1)};
+
+  % GPIO devices below
+  \node[hwbox, below=14mm of pi, xshift=-14mm, minimum width=28mm] (leds)
+    {\textbf{Status lights}\\\scriptsize GPIO 4 and 6};
+  \node[hwbox, below=14mm of pi, xshift=18mm, minimum width=30mm] (talk)
+    {\textbf{Speaking signal}\\\scriptsize GPIO 18 (input)};
+
+  % Links
+  \draw[flow, <->] (pi) -- node[lbl] {internet} (cloud);
+  \draw[flow] (cam.east) -- (cam.east -| pi.west);
+  \draw[flow, <->] (snd.east) -- (snd.east -| pi.west);
+  \draw[flow] (pi.west |- screen.east) -- (screen.east);
+  \draw[flow] (pi.east |- b1.west) -- node[lbl] {I$^2$C} (b1.west);
+  \draw[flow] (pi.east |- b2.west) -- node[lbl] {I$^2$C} (b2.west);
+  \draw[flow] (b1.east) -- (g1.west);
+  \draw[flow] (b1.east) -- (g2.west);
+  \draw[flow] (b2.east) -- (g3.west);
+  \draw[flow] (b2.east) -- (g4.west);
+  \draw[flow] (pi.south -| leds.north) -- (leds.north);
+  \draw[flow] (talk.north) -- (pi.south -| talk.north);
+
+  % Legend
+  \node[font=\scriptsize, anchor=north] at ($(pi.south |- talk.south)+(0,-5mm)$)
+    {\tikz\node[hostbox, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ computer\quad
+     \tikz\node[mcubox, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ motion\quad
+     \tikz\node[uibox, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ voice\quad
+     \tikz\node[visbox, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ vision\quad
+     \tikz\node[hwbox, minimum height=2.5mm, minimum width=4mm, inner sep=0]{};\ other hardware};
+\end{tikzpicture}

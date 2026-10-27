@@ -1,0 +1,20 @@
+% Enrolment, training and recognition, from src/vision/capture_faces.py,
+% src/vision/recognise_faces.py and src/face_greeting.py (read 2026-10-28).
+\begin{tikzpicture}[node distance=5mm and 7mm, every node/.append style={minimum width=30mm}]
+  % Row 1: enrolment and training
+  \node[font=\scriptsize\bfseries\sffamily, anchor=west, minimum width=0] at (-1.7,1.05) {Enrolment, once per person};
+  \node[visbox] (c1) {\textbf{Camera}\\\scriptsize one face in view};
+  \node[visbox, right=of c1] (c2) {\textbf{Detect and align}\\\scriptsize dlib, 68 landmarks,\\\scriptsize 400\,px wide};
+  \node[visbox, right=of c2] (c3) {\textbf{Save photos}\\\scriptsize every 5th frame:\\\scriptsize 8 train, 2 test};
+  \node[visbox, right=of c3] (c4) {\textbf{Train}\\\scriptsize 128-number face code,\\\scriptsize $k$-NN classifier};
+  \draw[flow] (c1) -- (c2); \draw[flow] (c2) -- (c3); \draw[flow] (c3) -- (c4);
+
+  % Row 2: recognition and greeting
+  \node[font=\scriptsize\bfseries\sffamily, anchor=west, minimum width=0] at (-1.7,-1.55) {Recognition, live};
+  \node[visbox, below=19mm of c1] (r1) {\textbf{Camera frame}\\\scriptsize halved; every\\\scriptsize 30th frame used};
+  \node[visbox, right=of r1] (r2) {\textbf{Find and encode}\\\scriptsize each face\\\scriptsize in the frame};
+  \node[visbox, right=of r2] (r3) {\textbf{Nearest match}\\\scriptsize distance $\le$ 0.5,\\\scriptsize else ``unknown''};
+  \node[mcubox, right=of r3] (r4) {\textbf{Greet once}\\\scriptsize after 10 frames with\\\scriptsize the name: hello, handshake};
+  \draw[flow] (r1) -- (r2); \draw[flow] (r2) -- (r3); \draw[flow] (r3) -- (r4);
+  \draw[dataflow] (c4.south) -- ++(0,-6mm) -| node[lbl, pos=0.25, minimum width=0] {\scriptsize trained model} (r3.north);
+\end{tikzpicture}

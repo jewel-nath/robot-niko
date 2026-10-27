@@ -1,0 +1,37 @@
+% Niko's programs, processes and modules, from src/, systemd/robot.service and
+% scripts/ (read 2026-10-28).
+\begin{tikzpicture}[node distance=4mm and 6mm,
+    mod/.style={box, font=\scriptsize, minimum width=27mm, minimum height=6mm}]
+  % The voice program, started at boot
+  \node[hostbox, minimum width=34mm] (svc) {\textbf{systemd service}\\\scriptsize starts at boot, restarts on exit};
+  \node[hostbox, below=6mm of svc, minimum width=34mm] (main) {\textbf{\topic{main.py}}\\\scriptsize assistant event loop};
+  \node[uibox, below left=6mm and -6mm of main, minimum width=30mm, font=\scriptsize] (pv) {wake-word thread};
+  \node[mcubox, below right=6mm and -6mm of main, minimum width=30mm, font=\scriptsize] (jp) {jaw process (GPIO 18)};
+  \node[uibox, below=16mm of main, minimum width=34mm, font=\scriptsize] (chr) {headless Chromium, online voice};
+  \draw[flow] (svc) -- (main);
+  \draw[flow] (main) -- (pv);
+  \draw[flow] (main) -- (jp);
+  \draw[flow] (main) -- (chr);
+  \begin{scope}[on background layer]
+    \node[group, draw=hostedge, fit=(svc) (pv) (jp) (chr), label={[grouplabel, anchor=south west]north west:Voice program, at boot}] (g1) {};
+  \end{scope}
+
+  % Programs started by hand
+  \node[visbox, right=42mm of main, yshift=8mm, minimum width=34mm] (rec) {\textbf{\topic{recognise_faces.py}}\\\scriptsize greets known faces};
+  \node[visbox, below=5mm of rec, minimum width=34mm] (fol) {\textbf{\topic{follow_face.py}}\\\scriptsize turns the head to a face};
+  \node[uibox, below=5mm of fol, minimum width=34mm] (sp) {\textbf{\topic{launch_speech.py}}\\\scriptsize the launch speech};
+  \begin{scope}[on background layer]
+    \node[group, draw=visedge, fit=(rec) (fol) (sp), label={[grouplabel, anchor=south west]north west:Programs started on demand}] (g2) {};
+  \end{scope}
+
+  % Shared modules underneath
+  \node[mcubox, mod, below=24mm of chr, xshift=-20mm] (mv) {\topic{move.py} servos};
+  \node[mcubox, mod, right=of mv] (mm) {\topic{movement/} gestures};
+  \node[hostbox, mod, right=of mm] (ind) {\topic{indicator.py} lights};
+  \node[uibox, mod, right=of ind] (tk) {\topic{talk*.py} speech};
+  \begin{scope}[on background layer]
+    \node[group, draw=hwedge, fit=(mv) (mm) (ind) (tk), label={[grouplabel, anchor=south west]north west:Common modules}] (g3) {};
+  \end{scope}
+  \draw[dataflow] (g1.south) -- (g1.south |- g3.north);
+  \draw[dataflow] (g2.south) -- (g2.south |- g3.north);
+\end{tikzpicture}

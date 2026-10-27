@@ -1,0 +1,35 @@
+% The build of 2022, from the dated photos and videos in docs/media/, the git
+% history and the press of December 2022 (hub notes, read 2026-10-28).
+% One unit = one month; 0 is January 2022.
+\begin{tikzpicture}[x=11mm, y=1cm,
+    ms/.style={circle, fill=#1, draw=white, line width=0.6pt, inner sep=2.2pt},
+    lab/.style={font=\scriptsize, align=center, text width=24mm}]
+  \draw[line width=2.2pt, gray!30, line cap=round] (0,0) -- (12.4,0);
+  \foreach \m/\l in {0/Jan, 2/Mar, 4/May, 6/Jul, 8/Sep, 10/Nov, 12/Jan}{
+    \draw[gray!60] (\m,-0.12) -- (\m,0.12);
+    \node[font=\scriptsize, gray] at (\m,-0.35) {\l};
+  }
+  \node[font=\scriptsize\bfseries, gray] at (0,-0.75) {2022};
+  \node[font=\scriptsize\bfseries, gray] at (12,-0.75) {2023};
+
+  % Above the line
+  \foreach \x/\y/\c/\t in {
+      0/1.3/hwedge/{Work begins (about Jan)},
+      7.2/1.3/visedge/{3D model of Niko (Aug 7)},
+      10.07/1.3/mcuedge/{Head moves on a test stand (Nov 3)},
+      11.2/2.5/hostedge/{Launched in public (Dec 6)}}{
+    \draw[\c, thick] (\x,0) -- (\x,\y-0.25);
+    \node[ms=\c] at (\x,0) {};
+    \node[lab, anchor=south] at (\x,\y-0.25) {\t};
+  }
+  % Below the line
+  \foreach \x/\y/\c/\t in {
+      3.77/-1.5/hostedge/{Code repository created (Apr 24)},
+      7.4/-1.5/hwedge/{First printed parts (Aug)},
+      9.67/-2.5/hostedge/{``Hey Niko'' wake word added (Oct 21)},
+      10.93/-1.5/mcuedge/{Finished robot (Nov 29)}}{
+    \draw[\c, thick] (\x,0) -- (\x,\y+0.25);
+    \node[ms=\c] at (\x,0) {};
+    \node[lab, anchor=north] at (\x,\y+0.25) {\t};
+  }
+\end{tikzpicture}
