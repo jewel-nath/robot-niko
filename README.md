@@ -21,8 +21,11 @@ faces. It runs Python on a Raspberry Pi.
 
 **[Robot Niko: A Life-Size 3D-Printed Humanoid Assistant on a Raspberry Pi — System Design and Build](docs/report/robot-niko-report.pdf)**
 (October 2026, 15 pages): the build, the electronics, the software, the motion,
-the voice and the vision, with 13 diagrams. Its source and the diagrams are in
-[docs/report/](docs/report/README.md) and [docs/diagrams/](docs/diagrams/README.md).
+the voice and the vision, with 13 diagrams. By Jewel Nath, Shanjit Mondol,
+Tousif Bin Parves, Md Mohiuddin Khan Mahin and Anik Chakraborty; on Zenodo as
+[doi:10.5281/zenodo.23700587](https://doi.org/10.5281/zenodo.23700587). Its
+source and the diagrams are in [docs/report/](docs/report/README.md) and
+[docs/diagrams/](docs/diagrams/README.md).
 
 ## What it does
 

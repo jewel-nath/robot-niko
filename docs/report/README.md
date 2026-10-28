@@ -1,9 +1,14 @@
 # Technical report
 
 **Robot Niko: A Life-Size 3D-Printed Humanoid Assistant on a Raspberry Pi —
-System Design and Build.** Version 1.0, October 2026.
+System Design and Build.** Version 1.1, October 2026.
 
-[Read the PDF](robot-niko-report.pdf) (15 pages, one column).
+By Jewel Nath, Shanjit Mondol, Tousif Bin Parves, Md Mohiuddin Khan Mahin and
+Anik Chakraborty (Quanta Robotics).
+
+[Read the PDF](robot-niko-report.pdf) (15 pages, one column). On Zenodo:
+[doi:10.5281/zenodo.23700587](https://doi.org/10.5281/zenodo.23700587), which
+always points to the latest version.
 
 It describes Niko's mechanical build, electronics, software, motion, voice and
 vision, the behaviours recorded on video in December 2022, and the next steps.

@@ -8,15 +8,17 @@
 \thispagestyle{empty}
 \begin{tcolorbox}[colback=accent, colframe=accent, arc=3pt, left=14pt, right=14pt, top=14pt, bottom=12pt]
   \color{white}\sffamily\raggedright
-  {\small Technical report \quad$\cdot$\quad Version 1.0 \quad$\cdot$\quad October 2026}\par\vspace{8pt}
+  {\small Technical report \quad$\cdot$\quad Version 1.1 \quad$\cdot$\quad October 2026}\par\vspace{8pt}
   {\LARGE\bfseries Robot Niko: A Life-Size 3D-Printed Humanoid Assistant on a Raspberry~Pi}\par\vspace{6pt}
   {\large System Design and Build}
 \end{tcolorbox}
 
 \vspace{4pt}
-{\sffamily
-\textbf{Jewel Nath}\quad{\color{muted}Independent researcher, Dhaka, Bangladesh}\\
-{\small\color{muted}ORCID \href{https://orcid.org/0009-0002-6609-6378}{0009-0002-6609-6378}\quad$\cdot$\quad Code: \url{https://github.com/jewel-nath/robot-niko}\quad$\cdot$\quad Licence: \href{https://creativecommons.org/licenses/by/4.0/}{CC BY 4.0}}\par}
+{\sffamily\raggedright
+\textbf{Jewel Nath}$^{1,2}$, \textbf{Shanjit Mondol}$^{2}$, \textbf{Tousif Bin Parves}$^{2}$, \textbf{Md Mohiuddin Khan Mahin}$^{2}$, \mbox{\textbf{Anik Chakraborty}$^{2}$}\\[2pt]
+{\small\color{muted}$^{1}$Independent researcher, Dhaka, Bangladesh\quad $^{2}$Quanta Robotics, Comilla University, Cumilla, Bangladesh}\\
+{\small\color{muted}Jewel Nath: ORCID \href{https://orcid.org/0009-0002-6609-6378}{0009-0002-6609-6378}\quad$\cdot$\quad Code: \url{https://github.com/jewel-nath/robot-niko}}\\
+{\small\color{muted}Licence: \href{https://creativecommons.org/licenses/by/4.0/}{CC BY 4.0}}\par}
 
 \vspace{6pt}
 \begin{summarybox}{Abstract}
@@ -127,7 +129,7 @@ In August 2022 the team assembled a 3D model of Niko from InMoov's parts in Blen
   \label{fig:timeline}
 \end{figure}
 
-\paragraph{Author's contribution} The author co-founded Quanta Robotics, led Niko's programming and wrote most of its code, 3D-printed and assembled its body, tuned its 27 servos, and planned its arm motions as servo sequences.
+\paragraph{Author contributions} Jewel Nath co-founded Quanta Robotics, led Niko's programming and wrote most of its code, 3D-printed and assembled its body, tuned its 27 servos, planned its arm motions as servo sequences, and wrote this report. Shanjit Mondol, Tousif Bin Parves, Md Mohiuddin Khan Mahin and Anik Chakraborty built Niko as members of the team; Tousif Bin Parves, Md Mohiuddin Khan Mahin and Anik Chakraborty also contributed to its code.
 
 % ---------------------------------------------------------------------------
 \section{Electronics}
@@ -298,7 +300,7 @@ Niko's abilities were recorded on video at the FabLab in the days around its lau
   \end{tabularx}
 \end{table}
 
-Niko was launched in public at the Deputy Commissioner's Office in Cumilla on 6 December 2022. Its launch was reported by Dhaka Times~24, Channel~24 Campus, Shomoyer Alo, Kaler Kantho, The Daily Post and Amader Cumilla, and the author was interviewed beside Niko by Bangladesh Television (BTV) on 14 December 2022.
+Niko was launched in public at the Deputy Commissioner's Office in Cumilla on 6 December 2022. Its launch was reported by Dhaka Times~24, Channel~24 Campus, Shomoyer Alo, Kaler Kantho, The Daily Post and Amader Cumilla, and Jewel Nath was interviewed beside Niko by Bangladesh Television (BTV) on 14 December 2022.
 
 % ---------------------------------------------------------------------------
 \section{Lessons Learned}
@@ -335,11 +337,11 @@ Niko shows that an open, 3D-printed humanoid body and a single Raspberry~Pi can 
 % ---------------------------------------------------------------------------
 \section*{Acknowledgements}
 
-Niko was built by Quanta Robotics: Shanjit Mondol, Anik Chakraborty, Tousif Bin Parves, Mahin Khan and the author. The team thanks the FabLab of the Deputy Commissioner's Office, Cumilla, where Niko was built and launched.
+The authors built Niko as the team Quanta Robotics. They thank the FabLab of the Deputy Commissioner's Office, Cumilla, where Niko was built and launched.
 
 Niko's body is InMoov, by Gaël Langevin (CC BY-NC 3.0). Its voice program and installers started from Shivasiddharth's GassistPi (MIT, with two conditions); its face recognition from the $k$-NN camera example of Adam Geitgey's \topic{face_recognition} (MIT); and its service installer from Google's AIY projects (Apache 2.0). Each derived file keeps its original notice.
 
-This report was written with the help of AI assistants, under the author's direction; its statements were checked against the code, its history and the dated photos and videos.
+This report was written with the help of AI assistants, under the first author's direction; its statements were checked against the code, its history and the dated photos and videos.
 
 {\small
 \bibliographystyle{IEEEtran}
